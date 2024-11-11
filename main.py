@@ -19,19 +19,14 @@ text_area = bitmap_label.Label(terminalio.FONT, text=text, scale=3, anchor_point
 
 text_area.anchored_position = (board.DISPLAY.width // 2, board.DISPLAY.height // 2)
 main_group.append(text_area)
+
 def rotate_point(x, y, abtx, abty, angle):
-    """
-    Rotates a point (x, y) around the origin by a given angle (in radians).
-    """
     og_angle = math.atan2(y-abty, x-abtx)
     hyp = math.sqrt((x-abtx)*(x-abtx) + (y-abty)*(y-abty))
     new = ((math.cos(og_angle+angle)*(hyp)+abtx), (math.sin(og_angle+angle)*(hyp)+abty))
     return new
 
 def rotate_points(points, center, angle):
-    """
-    Rotates a list of points around the origin by a given angle (in radians).
-    """
     rotated_points = []
     for (x, y) in points:
         rotated_points.append(rotate_point(x, y, center[0], center[1], angle))
