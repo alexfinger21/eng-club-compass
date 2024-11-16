@@ -1,6 +1,7 @@
 import board
 from adafruit_ina219 import INA219
 from displayio import OnDiskBitmap, TileGrid, Group, Palette
+import digitalio
 import terminalio
 import math
 import time
@@ -9,16 +10,28 @@ from adafruit_display_text import bitmap_label
 from adafruit_imageload import load
 
 i2c_bus = board.I2C()  # uses board.SCL and board.SDA
+print(dir(board))
 ina219 = INA219(i2c_bus)
 
 main_group = Group()
 board.DISPLAY.root_group = main_group
 
-text = "Engineering\nClub"
-text_area = bitmap_label.Label(terminalio.FONT, text=text, scale=3, anchor_point=(0.5, 0.5), color=0x0b78e6)
+button = digitalio.DigitalInOut(board.BOOT0 )
+button.direction = digitalio.Direction.INPUT
+button.pull = digitalio.Pull.UP
 
-text_area.anchored_position = (board.DISPLAY.width // 2, board.DISPLAY.height // 2)
-main_group.append(text_area)
+button_toggle = False
+button_value = True
+
+text = "Engineering\nClub"
+deg_text = bitmap_label.Label(terminalio.FONT, text=text, scale=3, anchor_point=(1, .5), color=0x0b78e6)
+
+deg_text.anchored_position = (board.DISPLAY.width, board.DISPLAY.height // 2)
+main_group.append(deg_text)
+
+ma_text = bitmap_label.Label(terminalio.FONT, text=text, scale=4, anchor_point=(0.5, 0.5), color=0x0b78e6)
+ma_text.anchored_position = (board.DISPLAY.width // 2, board.DISPLAY.height // 2)
+
 
 def rotate_point(x, y, abtx, abty, angle):
     og_angle = math.atan2(y-abty, x-abtx)
@@ -41,7 +54,7 @@ def flatten_points(point_list):
 
 palette = Palette(1)
 palette[0] = 0xFFFFFF
-MAX_CURRENT = 50 #mA
+MAX_CURRENT = 15.111 #mA
 
 polygon_shape = vectorio.Polygon(
         pixel_shader=palette,
@@ -50,13 +63,25 @@ polygon_shape = vectorio.Polygon(
 )
 time.sleep(1.5)
 main_group.append(polygon_shape)
-main_group.remove(text_area)
-main_group.append(text_area)
+main_group.remove(deg_text)
+main_group.append(deg_text)
 
-text_area.anchored_position = (board.DISPLAY.width // 2, board.DISPLAY.height - 12)
-text_area.scale = 2
+deg_text.anchored_position = (board.DISPLAY.width, board.DISPLAY.height - 12)
+deg_text.scale = 2
 
 while True:
+    if button.value == True and button_value == False:
+        if not button_toggle:
+            main_group.remove(polygon_shape)
+            main_group.remove(deg_text)
+            main_group.append(ma_text)
+        else:
+            main_group.append(polygon_shape)
+            main_group.append(deg_text)
+            main_group.remove(ma_text)
+        button_toggle = not button_toggle
+    button_value = button.value
+        
     bus_voltage = ina219.bus_voltage  # voltage on V- (load side)
     shunt_voltage = ina219.shunt_voltage  # voltage between V+ and V- across the shunt
     current = max(0, min(MAX_CURRENT, ina219.current))  # current in mA
@@ -67,7 +92,6 @@ while True:
     # 11.5 on x and half of the display height on y is the center of the arrow
     rotated_points = rotate_points(points, (path0_w/2, path0_h/2), current/MAX_CURRENT*2*math.pi)
     polygon_shape.points = flatten_points(rotated_points)
-    text_area.text = f"{round(current)} mA     {round(360*current/MAX_CURRENT)} dg"
-    time.sleep(0.01)
-
-
+    deg_text.text = f"{round(360*current/MAX_CURRENT)} dg  "
+    ma_text.text = f"{round(current)} mA"
+    time.sleep(0.1)
