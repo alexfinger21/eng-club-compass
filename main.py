@@ -21,7 +21,7 @@ display.refresh()
 main_group = Group()
 display.root_group = main_group
 
-button = digitalio.DigitalInOut(board.BOOT0 )
+button = digitalio.DigitalInOut(board.BOOT0)
 button.direction = digitalio.Direction.INPUT
 button.pull = digitalio.Pull.UP
 
@@ -81,7 +81,8 @@ polygon_shape = vectorio.Polygon(
         points=flatten_points(points),
         x=100, y=8
 )
-time.sleep(1.5)
+
+time.sleep(1)
 main_group.append(polygon_shape)
 main_group.remove(deg_text)
 main_group.append(deg_text)
@@ -91,6 +92,7 @@ deg_text.scale = 2
 
 if (slp):
     deep_sleep()
+
 while True:
     #pull up so reverse
     if button.value == True and prev_val_btn == False:
@@ -116,7 +118,7 @@ while True:
     rotated_points = rotate_points(points, (path0_w/2, path0_h/2), (1-current/MAX_CURRENT)*math.pi/2)
     polygon_shape.points = flatten_points(rotated_points)
     deg_text.text = f"{round(90*(1-current/MAX_CURRENT))} dg  "
-    ma_text.text = f"{round(current)} mA"
+    ma_text.text = f"{round(current/1000)} A\n {round(current)} mA"
     
     if (not sleep_pin.value):
         deep_sleep()
