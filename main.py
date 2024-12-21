@@ -113,9 +113,9 @@ while True:
     blinka_img = None
     #rotated_points = rotate_points(points, (board.DISPLAY.width//2, board.DISPLAY.height//2), current/MAX_CURRENT*2*math.pi)
     # 11.5 on x and half of the display height on y is the center of the arrow
-    rotated_points = rotate_points(points, (path0_w/2, path0_h/2), current/MAX_CURRENT*math.pi/2)
+    rotated_points = rotate_points(points, (path0_w/2, path0_h/2), (1-current/MAX_CURRENT)*math.pi/2)
     polygon_shape.points = flatten_points(rotated_points)
-    deg_text.text = f"{round(90*current/MAX_CURRENT)} dg  "
+    deg_text.text = f"{round(90*(1-current/MAX_CURRENT))} dg  "
     ma_text.text = f"{round(current)} mA"
     
     if (not sleep_pin.value):
