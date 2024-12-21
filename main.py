@@ -74,7 +74,7 @@ def flatten_points(point_list):
 
 palette = Palette(1)
 palette[0] = 0xFFFFFF
-MAX_CURRENT = 15.111 #mA
+MAX_CURRENT = 2*10000 #mA - currently 20 amps
 
 polygon_shape = vectorio.Polygon(
         pixel_shader=palette,
