@@ -117,13 +117,17 @@ while True:
     # 11.5 on x and half of the display height on y is the center of the arrow
     rotated_points = rotate_points(points, (path0_w/2, path0_h/2), (1-current/MAX_CURRENT)*math.pi/2)
     polygon_shape.points = flatten_points(rotated_points)
-    deg_text.text = f"{round(90*(1-current/MAX_CURRENT))} dg  "
-    ma_text.text = f"{round(current/1000)} A\n {round(current)} mA"
+    new_deg_text = f"{round(90*(1-current/MAX_CURRENT))} dg  "
+    new_ma_text = f"{round(current/1000)} A\n{round(current)} mA"
+    if new_deg_text != deg_text.text:
+        deg_text.text = new_deg_text
+
+    if new_ma_text != ma_text.text:
+        ma_text.text = new_ma_text
+
     
     if (not sleep_pin.value):
         deep_sleep()
         break
     
     time.sleep(0.1)
-
-
