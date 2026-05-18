@@ -65,7 +65,7 @@ def flatten_points(point_list):
 
 palette = Palette(1)
 palette[0] = 0xFFFFFF
-MAX_CURRENT = 2*10000 #mA - currently 20 amps
+MAX_CURRENT = 50 # 50 of whichever unit
 
 polygon_shape = vectorio.Polygon(
         pixel_shader=palette,
@@ -74,9 +74,9 @@ polygon_shape = vectorio.Polygon(
 )
 
 time.sleep(1)
+
 main_group.append(polygon_shape)
-main_group.remove(deg_text)
-main_group.append(deg_text)
+main_group.append(ma_text)
 
 deg_text.anchored_position = (display.width, display.height - 12)
 deg_text.scale = 2
@@ -88,13 +88,13 @@ while True:
 
     if button.value is True and prev_val_btn is False:
         if not button_toggle:
-            main_group.remove(polygon_shape)
-            main_group.remove(deg_text)
-            main_group.append(ma_text)
+            polygon_shape.hidden = True
+            deg_text.hidden = True
+            ma_text.hidden = False
         else:
-            main_group.append(polygon_shape)
-            main_group.append(deg_text)
-            main_group.remove(ma_text)
+            polygon_shape.hidden = False
+            deg_text.hidden = False
+            ma_text.hidden = True
 
         button_toggle = not button_toggle
 
@@ -107,22 +107,30 @@ while True:
     current = ina219.current * 1000  # current in uA
     unit = 0
 
-    while current >= 1000:
+    while abs(current) >= 1000:
         unit += 1
         current /= 1000
 
-    unit = min(unit, letter_units.size - 1)
+    unit = min(unit, len(letter_units) - 1)
 
     power = ina219.power  # power in watts
-    blinka_img = None
     #rotated_points = rotate_points(points, (board.DISPLAY.width//2, board.DISPLAY.height//2), current/MAX_CURRENT*2*math.pi)
     # 11.5 on x and half of the display height on y is the center of the arrow
-    rotated_points = rotate_points(points, (path0_w/2, path0_h/2), (1-current/MAX_CURRENT)*math.pi/2)
+    rotated_points = rotate_points(
+        points,
+        (path0_w/2,
+         path0_h/2),
+        (1-min(MAX_CURRENT, max(1, current))/MAX_CURRENT)*math.pi/2
+    )
+
     polygon_shape.points = flatten_points(rotated_points)
-    new_deg_text = f"{round(90*(1-current/MAX_CURRENT))} dg  "
-    new_ma_text = f"{current} {letter_units[unit]}\n{round(current)} mA"
+    # new_deg_text = f"{round(90*(1-current/MAX_CURRENT))} dg  "
+    new_ma_text = f"{current} {letter_units[unit]}\n"
+
+    '''
     if new_deg_text != deg_text.text:
         deg_text.text = new_deg_text
+    '''
 
     if new_ma_text != ma_text.text:
         ma_text.text = new_ma_text
