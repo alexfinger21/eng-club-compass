@@ -65,7 +65,7 @@ def flatten_points(point_list):
 
 palette = Palette(1)
 palette[0] = 0xFFFFFF
-MAX_CURRENT = 50 # 50 of whichever unit
+MAX_CURRENT = 500 # 500 mA
 
 polygon_shape = vectorio.Polygon(
         pixel_shader=palette,
@@ -104,7 +104,9 @@ while True:
 
     shunt_voltage = ina219.shunt_voltage  # voltage between V+ and V- across the shunt
 
+    og_c_ma = ina219.current
     current = ina219.current * 1000  # current in uA
+
     unit = 0
 
     while abs(current) >= 1000:
@@ -120,7 +122,7 @@ while True:
         points,
         (path0_w/2,
          path0_h/2),
-        (1-min(MAX_CURRENT, max(1, current))/MAX_CURRENT)*math.pi/2
+        (1+min(MAX_CURRENT, max(-MAX_CURRENT, og_c_ma))/MAX_CURRENT)*math.pi/2
     )
 
     polygon_shape.points = flatten_points(rotated_points)
